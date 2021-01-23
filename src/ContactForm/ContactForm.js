@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import * as contactsActions from '../redux/contacts.js/contacts-actions';
-import PropTypes from 'prop-types';
 import s from '../ContactForm/ContactForm.module.css';
 
-function Phonebook({ OnSaveContacts }) {
+export default function Phonebook() {
   const { register, handleSubmit, errors } = useForm();
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+  const dispatch = useDispatch();
+  const myNamesInItem = useSelector(state => state.contacts.items);
 
   const reset = () => {
     setName('');
@@ -16,11 +17,22 @@ function Phonebook({ OnSaveContacts }) {
   };
 
   const onSubmit = () => {
-    OnSaveContacts(name, number);
+    const getContacts = myNamesInItem.map(contact =>
+      contact.name.toLocaleLowerCase(),
+    );
+
+    const isGetContactAlready = getContacts.includes(name.toLocaleLowerCase());
+
+    if (isGetContactAlready) {
+      reset();
+      return alert(`${name} is already in contacts!`);
+    }
+    dispatch(contactsActions.addContact(name, number));
     reset();
   };
 
   const handleChange = e => {
+    e.preventDefault();
     const { name, value } = e.currentTarget;
     switch (name) {
       case 'name':
@@ -97,20 +109,30 @@ function Phonebook({ OnSaveContacts }) {
   );
 }
 
-Phonebook.defaultProps = {
-  name: '',
-  number: '',
-};
+// ***Redux***
 
-Phonebook.propTypes = {
-  contacts: PropTypes.array,
-  name: PropTypes.string,
-  number: PropTypes.string,
-};
+// import { connect } from 'react-redux';
 
-const mapDispatchToProps = dispatch => ({
-  OnSaveContacts: (itemsName, itemsNumber) =>
-    dispatch(contactsActions.addContact(itemsName, itemsNumber)),
-});
+//  const onSubmit = () => {
+//    OnSaveContacts(name, number);
+//    reset();
+//    const isGetContactAlready = myNamesInItem.map(item =>
+//      item.name.toLocaleLowerCase().includes(name.toLocaleLowerCase()),
+//    );
+//    if (isGetContactAlready) {
+//      alert(`${name} is already in contacts!`);
+//    } else {
+//    }
+//  };
 
-export default connect(null, mapDispatchToProps)(Phonebook);
+// const mapStateToProps = state => ({
+//   myNamesInItem: state.contacts.items,
+// });
+
+// const mapDispatchToProps = dispatch => ({
+//   OnSaveContacts: (itemsName, itemsNumber) => {
+//     dispatch(contactsActions.addContact(itemsName, itemsNumber));
+//   },
+// });
+
+// export default connect(mapStateToProps, mapDispatchToProps)(Phonebook);

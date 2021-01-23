@@ -1,11 +1,26 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import * as contactsActions from '../redux/contacts.js/contacts-actions';
 import { GoOrganization } from 'react-icons/go';
 import { RiDeleteBin3Fill } from 'react-icons/ri';
 import s from '../ContactList/ContactList.module.css';
 
-const ContactList = ({ contacts, ondeleteContact }) => {
+const filterContactsByName = (allContacts, filter) => {
+  const normalizedFilter = filter.toLocaleLowerCase();
+
+  return allContacts.filter(({ name }) =>
+    name.toLocaleLowerCase().includes(normalizedFilter),
+  );
+};
+
+export default function ContactList() {
+  const dispatch = useDispatch();
+  const contacts = useSelector(state =>
+    filterContactsByName(state.contacts.items, state.contacts.filter),
+  );
+
+  const ondeleteContact = id => dispatch(contactsActions.deleteContact(id));
+
   return (
     <>
       <ul className={s.list}>
@@ -22,22 +37,26 @@ const ContactList = ({ contacts, ondeleteContact }) => {
       </ul>
     </>
   );
-};
+}
 
-const filterContactsByName = (allContacts, filter) => {
-  const normalizedFilter = filter.toLocaleLowerCase();
+// ***Redux***
 
-  return allContacts.filter(({ name }) =>
-    name.toLocaleLowerCase().includes(normalizedFilter),
-  );
-};
+// import { connect } from 'react-redux';
 
-const mapStateToProps = ({ contacts: { items, filter } }) => ({
-  contacts: filterContactsByName(items, filter),
-});
+// const filterContactsByName = (allContacts, filter) => {
+//   const normalizedFilter = filter.toLocaleLowerCase();
 
-const mapDispatchToProps = dispatch => ({
-  ondeleteContact: id => dispatch(contactsActions.deleteContact(id)),
-});
+//   return allContacts.filter(({ name }) =>
+//     name.toLocaleLowerCase().includes(normalizedFilter),
+//   );
+// };
 
-export default connect(mapStateToProps, mapDispatchToProps)(ContactList);
+// const mapStateToProps = ({ contacts: { items, filter } }) => ({
+//   contacts: filterContactsByName(items, filter),
+// });
+
+// const mapDispatchToProps = dispatch => ({
+//   ondeleteContact: id => dispatch(contactsActions.deleteContact(id)),
+// });
+
+// export default connect(mapStateToProps, mapDispatchToProps)(ContactList);
